@@ -1,0 +1,38 @@
+#%RAML 1.0 DataType
+type: object
+description: This is used to define RAML for employee api 
+properties:
+  status:
+    type: number
+    description: This will provide api response http status.
+    displayName: Status
+    example: 200    
+  message:
+    type: string
+    description: This will provide message.  
+    displayName: message
+    example: "success" 
+  details:
+    type: array
+    items:
+      properties:
+        id:
+          type: string
+          description: This will provide api response unique id.
+          displayName: id
+          example: "86d1dea2cf394353825bca5913c1c36b"    
+        name:
+          type: string
+          description: This will provide name.  
+          displayName: name
+          example: "Ramu" 
+        address:
+          type: string
+          description: This will provide name.  
+          displayName: name
+          example: "HYD" 
+        phone:
+          type: string
+          description: This will provide name.  
+          displayName: name
+          example: "681768153721"           

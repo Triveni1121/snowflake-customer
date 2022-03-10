@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+	xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd">
+	<http:listener-config
+		name="customer-snowflake-api-httpListenerConfig">
+		<http:listener-connection host="0.0.0.0"
+			port="8081" />
+	</http:listener-config>
+	<apikit:config name="customer-snowflake-api-config"
+		api="customer-snowflake-api.raml"
+		outboundHeadersMapName="outboundHeaders"
+		httpStatusVarName="httpStatus" >
+		<apikit:flow-mappings >
+			<apikit:flow-mapping resource="/customer" action="post" content-type="application/json" flow-ref="select-details-flow" />
+			<apikit:flow-mapping resource="/insert" action="post" content-type="application/json" flow-ref="insert-details-flow" />
+			<apikit:flow-mapping resource="/insert-into-multiple-tables" action="post" content-type="application/json" flow-ref="insert-into-multi-employee-flow" />
+			<apikit:flow-mapping resource="/scatter-gather" action="get" flow-ref="scatter-gather-flow" />
+			<apikit:flow-mapping resource="/customer" action="post" content-type="application/json" flow-ref="schedulerFlow" />
+		</apikit:flow-mappings>
+	</apikit:config>
+	<snowflake:snowflake-config name="Snowflake_Config" doc:name="Snowflake Config" doc:id="42bd3a90-b818-43b2-96a4-b0de11705edc" >
+		<snowflake:snowflake-connection accountName=" mi94567.east-us-2.azure" warehouse=" COMPUTE_WH" database=" SNOWFLAKE_SAMPLE_DATA" schema=" TPCH_SF10" user=" ramuk" password="MondayHoliday" />
+	</snowflake:snowflake-config>
+	<snowflake:snowflake-config name="Snowflake_Config1" doc:name="Snowflake Config" doc:id="da846565-7ce8-4631-8db1-b9f22c8510d2" >
+		<snowflake:snowflake-connection accountName="mi94567.east-us-2.azure" warehouse=" COMPUTE_WH" database="QA" schema="PUBLIC" user="ramuk" password="MondayHoliday" />
+	</snowflake:snowflake-config>
+
+</mule>

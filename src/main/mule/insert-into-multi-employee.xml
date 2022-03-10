@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="insert-into-multi-employee-flow" doc:id="4c3e01da-babb-4838-8a6f-bf2cc4e09580" >
+		<set-variable value="#[payload]" doc:name="intialPayloadBkp" doc:id="ec158142-19f4-4985-a5a6-cde96e0b957e" variableName="intialPayloadBkp"/>
+		<ee:transform doc:name="Transform Message" doc:id="0a1522f7-467d-4ecd-829d-2db4b3664d2e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	customerNum: payload.ckey[0]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="select-details-flow" doc:id="abae690b-92e4-471e-954e-aa29a44a01d9" name="select-details-flow" target="custRes"/>
+		<ee:transform doc:name="Transform Message" doc:id="506c6e72-6703-4731-abbf-61014176d556" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.custRes map(val, index)->{
+	name: val.customerName,
+	position: "LEAD"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="insert-details-flow" doc:id="0bfef80e-84e3-4e72-8d5a-3ed63abc3b47" name="insert-details-flow" target="empRes"/>
+		<ee:transform doc:name="Transform Message" doc:id="85815737-0c8e-44d7-8424-78f52d61fc06" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.empRes.details map (val, index)->{
+	id: val.id,
+	(vars.custRes filter($.customerName == val.name) map (val01, index01)->{
+		address: val01.address,
+		phone: val01.phoneNumber
+	})
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="insert-employee-detailsSub_Flow" doc:id="5c052bd0-ad8e-4c82-92d6-6709f2271559" name="insert-employee-detailsSub_Flow"/>
+		<ee:transform doc:name="Transform Message" doc:id="761c9d03-e757-41ec-9316-794987db9758" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	status: 200,
+	message: "Success",
+	details: vars.empRes.details map (val, index)->{
+		id: val.id,
+		name: val.name,
+		(vars.custRes filter($.customerName == val.name) map (val01, index01)->{
+			address: val01.address,
+			phone: val01.phoneNumber
+		})
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="89cda0e1-eb3d-484b-99a4-9f613687ff14" message="#[payload]"/>
+	</flow>
+</mule>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="insert-details-flow" doc:id="ce08991d-1e1d-456e-bcdb-fb926f65a5dd" >
+		<logger level="INFO" doc:name="start" doc:id="fe3dee75-30b4-4ab2-b0ad-9c3a4ddd0821" message="#[payload]"/>
+		<set-variable value="#[%dw 2.0&#10;output application/json  &#10;---&#10;payload map (val, indx) -&gt; {&#10;  name: val.name,&#10;  id: uuid(),&#10;  position: val.position&#10;}]" doc:name="Set Variable" doc:id="c191e839-454b-4a87-a81f-8dfb2b368b1c" variableName="varSnowFlakeInput"/>
+		<parallel-foreach doc:name="Parallel For Each" doc:id="84c6088e-6e7a-4b62-ad82-39bed7b5307d" collection="#[vars.varSnowFlakeInput]" timeout="30000" maxConcurrency="1">
+			<snowflake:insert doc:name="Insert" doc:id="e2410746-4294-4bff-8ad3-989c71703aa0" config-ref="Snowflake_Config1">
+				<snowflake:sql ><![CDATA[INSERT INTO EMPLOYEE(POSITION, NAME, ID)
+VALUES (:position, :name, :id)]]></snowflake:sql>
+				<snowflake:input-parameters ><![CDATA[#[payload]]]></snowflake:input-parameters>
+			</snowflake:insert>
+		</parallel-foreach>
+		<ee:transform doc:name="Transform Message" doc:id="760cab1a-aab1-4827-9066-8e52bbd879c3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	status: 200,
+	message: "Success",
+	password: p('secure::MondayHoliday'),
+	details: vars.varSnowFlakeInput map(val, indx) -> {
+		name: val.name,
+		id: val.id
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="end" doc:id="d21e4041-3210-4c2a-9d4b-210db802b24f" message="#[payload]"/>
+	</flow>
+</mule>

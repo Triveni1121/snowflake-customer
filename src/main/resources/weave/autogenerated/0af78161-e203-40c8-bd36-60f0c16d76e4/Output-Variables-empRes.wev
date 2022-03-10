@@ -1,0 +1,8 @@
+%dw 2.0
+
+type auto_0af78161_e203_40c8_bd36_60f0c16d76e4_Output_Variables_empRes = {
+  message: String, 
+  status: Number, 
+  _?: Any
+} {"description": "this is customer api input raml spec"}
+

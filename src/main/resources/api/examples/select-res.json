@@ -1,0 +1,11 @@
+{
+  "status": 200,
+  "message": "Success",
+  "customer": [
+    {
+      "customerkay": 243423,
+      "customerName": "Ramu",
+      "phoneNumber": "84-765-384765"
+    }
+  ]
+}

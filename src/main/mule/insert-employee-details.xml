@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd">
+	<sub-flow name="insert-employee-detailsSub_Flow" doc:id="0af78161-e203-40c8-bd36-60f0c16d76e4" >
+		<logger level="INFO" doc:name="Logger" doc:id="ac56497d-d0be-4cb9-b098-d085f70bd77b" message="#[payload]"/>
+		<snowflake:bulk-insert doc:name="Bulk insert" doc:id="f2d6a0e2-1af9-46b9-bcf1-3a7bc0fc97a7" config-ref="Snowflake_Config1">
+			<snowflake:sql ><![CDATA[INSERT INTO EMPLOYEE_DETAILS(ID, ADDRESS, PHONE)
+VALUES (:id, :address, :phone)]]></snowflake:sql>
+		</snowflake:bulk-insert>
+		<logger level="INFO" doc:name="Logger" doc:id="20a46de2-5982-49fb-b91c-233ca9d918da" message="Employee_Details Insert Success"/>
+	</sub-flow>
+</mule>

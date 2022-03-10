@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="scatter-gather-flow" doc:id="194d7a16-a553-4999-b6d1-7f8778431989" >
+		<logger level="INFO" doc:name="Logger" doc:id="b38bcb01-b75f-49a8-8359-c83301bfb368" message="#[attributes]"/>
+		<set-variable value="#[attributes.queryParams.id]" doc:name="Set Variable" doc:id="768bb07d-190d-4221-8092-5b3c26d193ff" variableName="id"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="725f5d9b-f25e-4666-b6dc-b9e569b4401b" >
+			<route >
+				<logger level="INFO" doc:name="Logger" doc:id="10d6f5fc-e52d-41cb-a52a-17171005ba0a" message="process2"/>
+				<snowflake:select doc:name="selectEmployee" doc:id="d8482b9a-8e08-4fb7-8f3a-241693f24ed7" config-ref="Snowflake_Config1">
+					<snowflake:sql><![CDATA[select * from employee where ID= :id]]></snowflake:sql>
+					<snowflake:input-parameters><![CDATA[#[{
+	id: attributes.queryParams.id
+}]]]></snowflake:input-parameters>
+				</snowflake:select>
+			</route>
+			<route >
+				<try doc:name="Try" doc:id="8979b7ea-61f9-44de-8686-d74e42ae89c1" >
+					<logger level="INFO" doc:name="Logger" doc:id="61d410eb-d5ca-4022-886f-3f667c0ce1df" message="process1" />
+					<snowflake:select doc:name="selectEmployeeDetails" doc:id="2c441583-23e0-4760-99dd-e036957eafc9" config-ref="Snowflake_Config1">
+					<snowflake:sql><![CDATA[select * from employee_details where ID= :id]]></snowflake:sql>
+					<snowflake:input-parameters><![CDATA[#[{
+	id: attributes.queryParams.id
+}]]]></snowflake:input-parameters>
+				</snowflake:select>
+				</try>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform Message" doc:id="85ceefad-b913-4e1e-bf00-40097f83c0d6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="c7e364bc-42bd-48e0-8b83-9a2ecccdf10d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	status: 200,
+	message: "Success",
+	details:payload.'0'.payload map (val, index)->{
+		id: val.ID,
+		name: val.NAME,
+		position: val.POSITION,
+		(payload.'1'.payload filter($.ID == val.ID) map (val01, index01)->{
+			address: val01.ADDRESS,
+			phone: val01.PHONE
+			
+		})
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="df4b76a9-6917-485e-88f4-bd31a57df301" message="#[payload]"/>
+	</flow>
+</mule>

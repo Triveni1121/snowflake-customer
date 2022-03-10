@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_ce08991d_1e1d_456e_bcdb_fb926f65a5dd_Output_Variables_intialPayloadBkp = Array<{  ckey: String,   _?: Any}> {"description": "This is used to define RAML for employee api"}
+

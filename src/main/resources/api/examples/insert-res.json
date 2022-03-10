@@ -1,0 +1,14 @@
+{
+  "status": 200,
+  "message": "Success",
+  "details": [
+    {
+      "name": "Ramu",
+      "id": "86d1dea2cf394353825bca5913c1c36b"
+    },
+    {
+      "name": "sai",
+      "id": "6781dea2cf394353825bca5913c1c36b"
+    }
+  ]
+}

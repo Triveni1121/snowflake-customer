@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="schedulerFlow" doc:id="9cde02f7-d184-4d3e-bffc-b8198b0a9f80" >
+		<scheduler doc:name="Scheduler" doc:id="a158edab-162f-49ed-9840-07e1b3e989a2" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="2" timeUnit="MINUTES"/>
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="4343b7fd-f6c5-4c84-a7e8-06638571fa24" message="scheduler started process"/>
+		<snowflake:select doc:name="Select" doc:id="6a8daf45-31ab-4fb6-94e7-4f1006baf83c" config-ref="Snowflake_Config" >
+			<snowflake:sql ><![CDATA[select C_CUSTKEY, C_NAME,  C_PHONE, C_ADDRESS   from TPCH_SF10.Customer LIMIT 10]]></snowflake:sql>
+		</snowflake:select>
+		<ee:transform doc:name="Transform Message" doc:id="a291b48a-0f9d-4d6c-b1b2-fd574a9de2f5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="578088bf-50be-4c6e-b6bc-95cae48c2d3e" message="#[payload]"/>
+	</flow>
+</mule>

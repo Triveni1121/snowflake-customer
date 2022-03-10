@@ -1,0 +1,88 @@
+#%RAML 1.0
+title: customer-snowflake-api
+description: This is used to get customer details from snowflake
+version: v1
+protocols: 
+    - HTTP
+# baseUri: http://customer-snowflake-api/customer  
+mediaType:
+    - application/json
+
+uses: 
+  dt: /libraries/data-types.raml
+
+/customer:
+  post: 
+    displayName: /customer
+    description: This resource is to get customer details 
+    body: 
+      application/json: 
+        type: dt.customerReq
+        example: !include examples/select-req.json
+    responses: 
+      200: 
+        body: 
+          application/json: 
+            type: dt.customerRes  
+            example: !include examples/select-res.json
+/insert: 
+  post: 
+    displayName: /insert
+    description: customer resource post method used to create customer details in db
+    body: 
+      application/json: 
+        type: dt.insertReq
+        example: !include examples/insert-req.json     
+    responses: 
+      200: 
+        body: 
+          application/json: 
+            type: dt.insertRes
+            example: !include examples/insert-res.json 
+/insert-into-multiple-tables:
+  displayName: /insert
+  description: This resource is to insert employee details into DB
+  post:
+    body:
+      application/json:
+        type: dt.insertMulReq
+        example: !include examples/insert-mule-req.json
+    responses:
+      200:
+        body:
+          application/json:
+            type: dt.insertMulRes  
+            example: !include examples/insert-mule-res.json
+/scatter-gather:
+  displayName: /scatter-gather
+  description: This resource is to insert employee details into DB
+  get:
+    queryParameters:
+      id:
+        type: string
+        description: get employee details by passing employee id
+        displayName: id
+        example: "hfyaywree5-wjewewhew-63h4whewewrg"
+    responses:
+      200:
+        body:
+          application/json:
+            type: dt.insertMulRes  
+            example: !include examples/insert-mule-res.json
+/scatter-gather1:
+  displayName: /scatter-gather
+  description: This resource is to insert employee details into DB
+  get:
+    queryParameters:
+      id:
+        type: string
+        description: get employee details by passing employee id
+        displayName: id
+        example: "hfyaywree5-wjewewhew-63h4whewewrg"
+    responses:
+      200:
+        body:
+          application/json:
+            type: dt.insertMulRes  
+            example: !include examples/insert-mule-res.json                         
+                           

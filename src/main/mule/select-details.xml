@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<ee:object-store-caching-strategy name="Caching_Strategy" doc:name="Caching Strategy" doc:id="b8f820af-7782-4724-85b2-053fcc26656f" keyGenerationExpression="#[payload.customerNum]" >
+		<os:private-object-store alias="snowFlakeCustomer" maxEntries="50" entryTtl="5" entryTtlUnit="MINUTES" />
+	</ee:object-store-caching-strategy>
+	<flow name="select-details-flow" doc:id="adf4d518-14e6-4d24-ad83-6a523b5c909b" >
+		<logger level="INFO" doc:name="Logger" doc:id="872715b5-2fcc-461e-8798-0271df01093c" message="#[payload]"/>
+		<ee:cache doc:name="Cache" doc:id="a486d6e1-9933-4bc8-bff2-694e8c20cb66" cachingStrategy-ref="Caching_Strategy">
+			<until-successful maxRetries="5" doc:name="Until Successful" doc:id="93e5d30e-f595-4400-be79-8d60861f8567">
+			<snowflake:select doc:id="3c1eab5e-80bd-4bbf-b0eb-c75c97b71a98" config-ref="Snowflake_Config">
+			<snowflake:sql><![CDATA[select C_CUSTKEY, C_NAME,  C_PHONE, C_ADDRESS   from TPCH_SF10.Customer where C_CUSTKEY =  :customerKey]]></snowflake:sql>
+			<snowflake:input-parameters><![CDATA[#[{
+customerKey: payload.customerNum
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		</until-successful>
+			<ee:transform doc:name="Transform Message" doc:id="9090d9d3-35e4-4a2f-bc56-b59d2de25dd7">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		</ee:cache>
+		<ee:transform doc:name="Transform Message" doc:id="5a1e1a60-300b-41d9-8ab6-7b7b8ad0383c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map (value, index) -> {
+	customerKey: value.C_CUSTKEY,
+	customerName: value.C_NAME,
+	phoneNumber: value.C_PHONE,
+	address: value.C_ADDRESS
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="1bac2015-d4b9-463e-8029-1eb6ca33e5c4" message="#[payload]"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="3b74de09-98d9-4d26-89d2-974cc81b0b18" >
+				<logger level="INFO" doc:name="Logger" doc:id="f8970c93-a20c-4548-b76c-586a91b1f9a7" message="#[error]"/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>
